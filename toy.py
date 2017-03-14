@@ -367,7 +367,7 @@ def clear_screen():
 
 
 
-def main():
+def voice_test():
 
 
     from gtts import gTTS
@@ -385,6 +385,11 @@ def main():
     print('abcde')
 
     time.sleep(33)
+    return
+
+
+def main():
+    print('abcde')
     return
 
 
