@@ -100,6 +100,7 @@ class Game(object):
         self.hunter_activate = False
         self.elder_vote_to_death = False
         self.language = language
+        self.lastword_cnt = 0
 
     def init_player_list(self):
 
@@ -279,20 +280,42 @@ class Game(object):
                     self.player_list[dead_rec[0] - 1].die()
                     self.check_hunter_stat(self.player_list[dead_rec[0] - 1])
                     self.player_list[dead_rec[0] - 1].die()
-                if len(lastword_tn) == 0:
-                    hint = {'en': 'No player is eligible to leave last word.',
-                            'zh': '没有玩家可以留下遗言.'}
-                    print_hint(self, hint)
-                else:
-                    hint = {'en': 'Player %d (%s), please leave your last word.'
-                                  % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid),
-                            'zh': '请%d号玩家(%s)留遗言.'
-                                  % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid)}
-                    print_hint(self, hint)
-                    press_enter(self)
+            if (len(lastword_tn) == 0) or (self.lastword_cnt >= 3):
+                hint = {'en': 'No player is eligible to leave last word.',
+                        'zh': '没有玩家可以留下遗言.'}
+                print_hint(self, hint)
+            else:
+                self.lastword_cnt = self.lastword_cnt + 1
+                hint = {'en': 'Player %d (%s), please leave your last word.'
+                              % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid),
+                        'zh': '请%d号玩家(%s)留遗言.'
+                              % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid)}
+                print_hint(self, hint)
+        press_enter(self)
         if self.hunter_activate and (not self.elder_vote_to_death):
             hint = {'en': 'Hunter! Shoot! Now!', 'zh': '猎人请开枪！'}
             print_hint(self, hint)
+            shoot_idx = self.action_hunter()
+            dead_shoot = [(shoot_idx, 1)]
+            dead_shoot = self.dl_check_love(dead_shoot)
+            dead_shoot = reduce_deadlist(dead_shoot)
+            hint = {'en': 'Death List after shooting:',
+                    'zh': '猎人开枪之后死掉的人有:'}
+            print_hint(self, hint)
+            for dead_rec in dead_shoot:
+                if dead_rec[1] == 1:
+                    hint = {'en': 'Player %d (%s) Lost 1 Life' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失一条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                else:
+                    hint = {'en': 'Player %d (%s) Lost 2 Lives' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失两条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                    self.player_list[dead_rec[0] - 1].die()
+            self.hunter_activate = False
+            press_enter(self)
         press_enter(self)
 
     def first_night(self):
@@ -379,20 +402,41 @@ class Game(object):
                     self.player_list[dead_rec[0] - 1].die()
                     self.check_hunter_stat(self.player_list[dead_rec[0] - 1])
                     self.player_list[dead_rec[0] - 1].die()
-                if len(lastword_tn) == 0:
-                    hint = {'en': 'No player is eligible to leave last word.',
-                            'zh': '没有玩家可以留下遗言.'}
-                    print_hint(self, hint)
-                else:
-                    hint = {'en': 'Player %d (%s), please leave your last word.'
-                                  % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid),
-                            'zh': '请%d号玩家(%s)留遗言.'
-                                  % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid)}
-                    print_hint(self, hint)
-                    press_enter(self)
+            if len(lastword_tn) == 0:
+                hint = {'en': 'No player is eligible to leave last word.',
+                        'zh': '没有玩家可以留下遗言.'}
+                print_hint(self, hint)
+            else:
+                hint = {'en': 'Player %d (%s), please leave your last word.'
+                              % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid),
+                        'zh': '请%d号玩家(%s)留遗言.'
+                                % (lastword_tn[0], self.player_list[lastword_tn[0] - 1].pid)}
+                print_hint(self, hint)
+        press_enter(self)
         if self.hunter_activate and (not self.elder_vote_to_death):
             hint = {'en': 'Hunter! Shoot! Now!', 'zh': '猎人请开枪！'}
             print_hint(self, hint)
+            shoot_idx = self.action_hunter()
+            dead_shoot = [(shoot_idx, 1)]
+            dead_shoot = self.dl_check_love(dead_shoot)
+            dead_shoot = reduce_deadlist(dead_shoot)
+            hint = {'en': 'Death List after shooting:',
+                    'zh': '猎人开枪之后死掉的人有:'}
+            print_hint(self, hint)
+            for dead_rec in dead_shoot:
+                if dead_rec[1] == 1:
+                    hint = {'en': 'Player %d (%s) Lost 1 Life' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失一条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                else:
+                    hint = {'en': 'Player %d (%s) Lost 2 Lives' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失两条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                    self.player_list[dead_rec[0] - 1].die()
+            self.hunter_activate = False
+            press_enter(self)
         press_enter(self)
 
     def day(self, iday):
@@ -434,9 +478,31 @@ class Game(object):
                 self.player_list[dead_rec[0] - 1].die()
                 self.check_hunter_stat(self.player_list[dead_rec[0] - 1])
                 self.player_list[dead_rec[0] - 1].die()
+        press_enter(self)
         if self.hunter_activate and (not self.elder_vote_to_death):
             hint = {'en': 'Hunter! Shoot! Now!', 'zh': '猎人请开枪！'}
             print_hint(self, hint)
+            shoot_idx = self.action_hunter()
+            dead_shoot = [(shoot_idx, 1)]
+            dead_shoot = self.dl_check_love(dead_shoot)
+            dead_shoot = reduce_deadlist(dead_shoot)
+            hint = {'en': 'Death List after shooting:',
+                    'zh': '猎人开枪之后死掉的人有:'}
+            print_hint(self, hint)
+            for dead_rec in dead_shoot:
+                if dead_rec[1] == 1:
+                    hint = {'en': 'Player %d (%s) Lost 1 Life' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失一条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                else:
+                    hint = {'en': 'Player %d (%s) Lost 2 Lives' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid),
+                            'zh': '%d号玩家(%s)丧失两条生命' % (dead_rec[0], self.player_list[dead_rec[0] - 1].pid)}
+                    print_hint(self, hint)
+                    self.player_list[dead_rec[0] - 1].die()
+                    self.player_list[dead_rec[0] - 1].die()
+            self.hunter_activate = False
+            press_enter(self)
         press_enter(self)
 
     def isover(self):
@@ -453,15 +519,18 @@ class Game(object):
             if not self.player_list[idx_love - 1].isalive():
                 self.team_love.remove(idx_love)
         if (not len(self.team_good) == 0) and (len(self.team_evil) == 0) and (len(self.team_love) == 0):
-            print('The Good WIN!!!')
+            hint = {'en': 'The Good WIN!!!', 'zh': '人民群众取得了胜利!'}
+            print_hint(self, hint)
             press_enter(self)
             return True
         elif (len(self.team_good) == 0) and (not len(self.team_evil) == 0) and (len(self.team_love) == 0):
-            print('The Evil WIN!!!')
+            hint = {'en': 'The Evil WIN!!!', 'zh': '狼人取得了胜利!'}
+            print_hint(self, hint)
             press_enter(self)
             return True
         elif (len(self.team_good) == 0) and (len(self.team_evil) == 0) and (len(self.team_love) == 0):
-            print('The Lovers WIN!!!')
+            hint = {'en': 'The Lovers WIN!!!', 'zh': '情侣取得了胜利!'}
+            print_hint(self, hint)
             press_enter(self)
             return True
         else:
@@ -557,8 +626,8 @@ class Game(object):
             press_enter(self)
             self.show_player_list()
             print('')
-            hint = {'en': 'Please select a player you want to KILL tonight! (0 - Cannot Decide)',
-                    'zh': '请选择今天晚上的作案目标! (无法决定请按0)'}
+            hint = {'en': 'Please select a player you want to KILL tonight! (0 - Cannot Decide) ',
+                    'zh': '请选择今天晚上的作案目标! (无法决定请按0) '}
             kill_idx = int(input(hint[self.language]))
             hint = {'en': 'Are you sure? (0 - Redo; 1 - Confirm) ',
                     'zh': '你确定么？(确认请按1，重新输入请按0) '}
@@ -580,10 +649,11 @@ class Game(object):
             press_enter(self)
             self.show_player_list()
             if len(self.guard_idx) > 0:
-                last_guard = self.player_list[self.guard_idx[-1] - 1]
-                hint = {'en': 'The player you guard last night is Player %d (%s)' % (last_guard.idx, last_guard.pid),
-                        'zh': '你昨晚守护的人是%d号玩家(%s)' % (last_guard.idx, last_guard.pid)}
-                print_hint(self, hint)
+                if not self.guard_idx[-1] == 0:
+                    last_guard = self.player_list[self.guard_idx[-1] - 1]
+                    hint = {'en': 'The player you guard last night is Player %d (%s)' % (last_guard.idx, last_guard.pid),
+                            'zh': '你昨晚守护的人是%d号玩家(%s)' % (last_guard.idx, last_guard.pid)}
+                    print_hint(self, hint)
             hint = {'en': 'Please select a player you want to GUARD tonight! ',
                     'zh': '请选择一个你今晚要守护的人! '}
             guard_idx = int(input(hint[self.language]))
@@ -657,6 +727,19 @@ class Game(object):
         speak_hint(self, hint, 6)
         return heal_tn, poison_tn
 
+    def action_hunter(self):
+        self.show_player_list()
+        print('')
+        hint = {'en': 'Please select a player you want to shoot! ',
+                'zh': '请选择你要击毙的玩家! '}
+        shoot_idx = int(input(hint[self.language]))
+        hint = {'en': 'Are you sure? (0 - Redo; 1 - Confirm) ',
+                'zh': '你确定么？(确认请按1，重新输入请按0) '}
+        i_sure = input(hint[self.language])
+        if not i_sure == '1':
+            return self.action_hunter()
+        return shoot_idx
+
     def dl_check_love(self, dead_tn):
         dead_tn_tmp = dead_tn
         for dead_man in dead_tn_tmp:
@@ -671,12 +754,80 @@ class Game(object):
             self.hunter_activate = True
 
     def end(self):
-        pass
+        press_enter(self)
+        self.show_history()
+        return
+
+    def show_history(self):
+        self.show_player_list_all()
+        hint = {'en': 'Cupid: Player %d %s' % (self.cupid_idx, self.player_list[self.cupid_idx - 1].pid),
+                'zh': '丘比特: %d号玩家%s' % (self.cupid_idx, self.player_list[self.cupid_idx - 1].pid)}
+        print_hint(self, hint)
+
+        lover_idx_list = []
+        lover_pid_list = []
+        for player in self.player_list:
+            if not player.lover == None:
+                lover_idx_list.append(player.idx)
+                lover_pid_list.append(player.pid)
+                lover_idx_list.append(player.lover.idx)
+                lover_pid_list.append(player.lover.pid)
+                break
+        hint = {'en': 'Lovers: Player %d (%s) and Player %d (%s)'
+                      % (lover_idx_list[0], lover_pid_list[0], lover_idx_list[1], lover_pid_list[1]),
+                'zh': '情侣：%d号玩家(%s) 与 %d号玩家(%s)'
+                      % (lover_idx_list[0], lover_pid_list[0], lover_idx_list[1], lover_pid_list[1])}
+        print_hint(self, hint)
+
+        hint = {'en': 'Werewolf kill history:',
+                'zh': '狼人杀人历史:'}
+        print_hint(self, hint)
+        his = ''
+        for i in range(len(self.kill_idx)):
+            his = his + '%5d' % self.kill_idx[i]
+        print(his)
+
+        hint = {'en': 'Heal history:',
+                'zh': '解药历史:'}
+        print_hint(self, hint)
+        his = ''
+        for i in range(len(self.heal_idx)):
+            his = his + '%5d' % self.heal_idx[i]
+        print(his)
+
+        hint = {'en': 'Poison history:',
+                'zh': '毒药历史:'}
+        print_hint(self, hint)
+        his = ''
+        for i in range(len(self.poison_idx)):
+            his = his + '%5d' % self.poison_idx[i]
+        print(his)
+
+        hint = {'en': 'Guard history:',
+                'zh': '守卫历史:'}
+        print_hint(self, hint)
+        his = ''
+        for i in range(len(self.guard_idx)):
+            his = his + '%5d' % self.guard_idx[i]
+        print(his)
+
+        hint = {'en': 'Vote history:',
+                'zh': '投票历史:'}
+        print_hint(self, hint)
+        his = ''
+        for i in range(len(self.vote_idx)):
+            his = his + '%5d' % self.vote_idx[i]
+        print(his)
+        return
 
 
 def press_enter(game):
     hint = {'en': 'Press Enter to Continue.', 'zh': '请按回车键继续'}
-    input(hint[game.language])
+    h = input(hint[game.language])
+    if h == 'h':
+        game.show_history()
+        press_enter(game)
+    return
 
 
 def clear_screen():
@@ -719,7 +870,7 @@ def main():
                     'zh': ['拓姐', '超哥', '杨潇', '非非', '汪佳佳', '浩哥', '赵航琪',
                            '小仙女', '杰雷米', '汉唐', '梁朝伟']}
     n_player = 9
-    language = 'en'
+    language = 'zh'
 
     # Initialization
     game = Game(role_list_all[language], pid_list_all[language], n_player, language)
